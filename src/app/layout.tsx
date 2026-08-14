@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PriscriptOCR — AI Medical Prescription Intelligence",
+  title: "PrescriptOCR — AI Medical Prescription Intelligence",
   description:
     "Convert handwritten prescriptions into structured digital records using AI-powered OCR and Google Gemini.",
   keywords: ["prescription OCR", "medical AI", "clinic management", "doctor tools"],

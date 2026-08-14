@@ -15,8 +15,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard | PriscriptOCR",
+  title: "Dashboard | PrescriptOCR",
 };
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function DashboardPage() {
   const stats = await getDashboardStats();

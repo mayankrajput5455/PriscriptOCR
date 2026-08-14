@@ -43,7 +43,7 @@ export function Sidebar() {
           </div>
           <div>
             <p className="text-sm font-bold text-slate-50 tracking-tight leading-none mb-0.5">
-              PriscriptOCR
+              PrescriptOCR
             </p>
             <p className="text-xs text-slate-500">Medical AI Platform</p>
           </div>

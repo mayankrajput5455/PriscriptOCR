@@ -13,7 +13,7 @@ export async function uploadToCloudinary(
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "priscriptocr/prescriptions",
+        folder: "prescriptocr/prescriptions",
         public_id: filename,
         resource_type: "image",
         quality: "auto",

@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const { patient } = await getPatientById(id);
   return {
-    title: patient ? `${patient.name} | PriscriptOCR` : "Patient | PriscriptOCR",
+    title: patient ? `${patient.name} | PrescriptOCR` : "Patient | PrescriptOCR",
   };
 }
 

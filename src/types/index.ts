@@ -1,4 +1,4 @@
-// Shared TypeScript types for PriscriptOCR
+// Shared TypeScript types for PrescriptOCR
 
 export interface Patient {
   id: string;

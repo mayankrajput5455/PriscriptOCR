@@ -105,7 +105,7 @@ export default function PrescriptionDetailPage({ params }: Props) {
     // Header
     doc.setFontSize(20);
     doc.setTextColor(37, 99, 235);
-    doc.text("PriscriptOCR", 20, 20);
+    doc.text("PrescriptOCR", 20, 20);
     doc.setFontSize(12);
     doc.setTextColor(100, 116, 139);
     doc.text("AI Prescription Intelligence", 20, 28);
