@@ -57,7 +57,15 @@ app.use("/api/verification", verificationRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
 
-// ─── Health Check ─────────────────────────────────────────────────────────────
+// ─── Health Check & Root ──────────────────────────────────────────────────────
+
+app.get("/", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "PrescriptOCR Backend API is running",
+    healthCheck: "/api/health",
+  });
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "PrescriptOCR API is running" });
