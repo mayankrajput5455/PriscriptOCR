@@ -49,22 +49,34 @@ export async function verifyJWT(token: string): Promise<SessionPayload | null> {
 // ─── Session Helpers ─────────────────────────────────────────────────────────
 
 export function setAuthCookie(res: Response, token: string) {
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
   });
 }
 
 export function clearAuthCookie(res: Response) {
-  res.clearCookie(AUTH_COOKIE_NAME, { path: "/" });
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie(AUTH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  });
 }
 
 export async function getCurrentUser(req: Request): Promise<SessionPayload | null> {
   try {
-    const token = req.cookies?.[AUTH_COOKIE_NAME];
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : null;
+    const token = req.cookies?.[AUTH_COOKIE_NAME] || bearerToken;
+
     if (!token) return null;
     const payload = await verifyJWT(token);
     if (!payload?.userId) return null;

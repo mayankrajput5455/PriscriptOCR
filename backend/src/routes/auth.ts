@@ -141,7 +141,17 @@ router.post("/login", async (req, res: Response) => {
     });
 
     setAuthCookie(res, token);
-    res.json({ success: true });
+    res.json({
+      success: true,
+      token,
+      user: {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        clinicName: user.clinicName,
+        role: user.role,
+      },
+    });
   } catch (err) {
     console.error("login error:", err);
     res.status(500).json({
@@ -266,7 +276,8 @@ router.get("/google/callback", async (req, res) => {
     });
 
     setAuthCookie(res, token);
-    res.redirect(`${frontendUrl}${target}`);
+    const separator = target.includes("?") ? "&" : "?";
+    res.redirect(`${frontendUrl}${target}${separator}token=${encodeURIComponent(token)}`);
   } catch (err) {
     console.error("Google auth callback error:", err);
     res.redirect(`${frontendUrl}/login?error=Google authentication failed`);

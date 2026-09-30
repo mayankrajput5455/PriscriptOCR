@@ -14,9 +14,23 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Response interceptor - only redirect to login if a protected request fails 401
+// Request interceptor - attach Bearer token if stored in localStorage
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("prescriptocr_token");
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor - persist token and only redirect to login if a protected request fails 401
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data?.token) {
+      localStorage.setItem("prescriptocr_token", response.data.token);
+    }
+    return response;
+  },
   (error) => {
     const url = error.config?.url || "";
     const isAuthCheck = url.includes("/auth/me") || url.includes("/auth/login");
@@ -25,8 +39,11 @@ api.interceptors.response.use(
       window.location.pathname.startsWith("/signup") ||
       window.location.pathname.startsWith("/verify");
 
-    if (error.response?.status === 401 && !isAuthCheck && !isPublicRoute) {
-      window.location.href = "/login";
+    if (error.response?.status === 401) {
+      localStorage.removeItem("prescriptocr_token");
+      if (!isAuthCheck && !isPublicRoute) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

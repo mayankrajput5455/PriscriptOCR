@@ -35,11 +35,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
+    localStorage.removeItem("prescriptocr_token");
     setUser(null);
     window.location.href = "/login";
   };
 
   useEffect(() => {
+    // Check if URL has token (from OAuth callback)
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get("token");
+    if (tokenFromUrl) {
+      localStorage.setItem("prescriptocr_token", tokenFromUrl);
+      params.delete("token");
+      const newQuery = params.toString();
+      const newUrl =
+        window.location.pathname +
+        (newQuery ? `?${newQuery}` : "") +
+        window.location.hash;
+      window.history.replaceState({}, "", newUrl);
+    }
+
     refresh().finally(() => setLoading(false));
   }, []);
 
