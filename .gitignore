@@ -24,6 +24,7 @@ node_modules/
 .next/
 out/
 build/
+dist/
 
 # ── Drizzle ORM ────────────────────────────────────────────────────────────────
 drizzle/          # generated migration files (recreatable via db:generate)
