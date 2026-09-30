@@ -1,7 +1,15 @@
 import axios from "axios";
 
+export const BACKEND_URL = (
+  import.meta.env.VITE_API_URL || "https://priscriptocr.onrender.com"
+).replace(/\/+$/, "");
+
+export const API_BASE_URL = BACKEND_URL.endsWith("/api")
+  ? BACKEND_URL
+  : `${BACKEND_URL}/api`;
+
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });

@@ -142,7 +142,7 @@ GMAIL_APP_PASSWORD=your_app_password
 
 ### `frontend/.env`
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=https://priscriptocr.onrender.com
 ```
 
 ---

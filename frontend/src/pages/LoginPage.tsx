@@ -2,7 +2,7 @@ import { Suspense, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Activity, Mail, Lock, ArrowRight, Sparkles, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import api from "../lib/api";
+import api, { BACKEND_URL } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
 function LoginForm() {
@@ -79,7 +79,7 @@ function LoginForm() {
         {/* Google OAuth */}
         <button
           type="button"
-          onClick={() => { window.location.href = `/api/auth/google?from=${encodeURIComponent(from)}`; }}
+          onClick={() => { window.location.href = `${BACKEND_URL}/api/auth/google?from=${encodeURIComponent(from)}`; }}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
             gap: 12, padding: "12px 16px", borderRadius: 12, background: "#1e293b",

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Activity, Mail, Lock, User, Building, ArrowRight, Sparkles, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import api from "../lib/api";
+import api, { BACKEND_URL } from "../lib/api";
 
 const inputStyle = {
   width: "100%", padding: "10px 16px 10px 42px",
@@ -56,7 +56,7 @@ export default function SignupPage() {
         </div>
 
         <div style={{ padding: 32, borderRadius: 24, background: "rgba(15,23,42,0.75)", border: "1px solid rgba(51,65,85,0.6)", backdropFilter: "blur(20px)", boxShadow: "0 20px 40px -15px rgba(0,0,0,0.5)" }}>
-          <button type="button" onClick={() => { window.location.href = "/api/auth/google?from=/dashboard"; }}
+          <button type="button" onClick={() => { window.location.href = `${BACKEND_URL}/api/auth/google?from=/dashboard`; }}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "12px 16px", borderRadius: 12, background: "#1e293b", border: "1px solid #334155", color: "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>
             <svg width="16" height="16" viewBox="0 0 24 24">
               <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
