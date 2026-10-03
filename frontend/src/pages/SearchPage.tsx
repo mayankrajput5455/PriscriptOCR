@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Search, ArrowRight, Star, FileSearch } from "lucide-react";
+import { Search, ArrowRight, Star, FileSearch, FileText, CheckCircle2 } from "lucide-react";
 import { TagBadge } from "../components/prescription/TagBadge";
 import { OCRConfidenceIndicator } from "../components/prescription/OCRConfidenceIndicator";
 import { getInitials, formatDate } from "../lib/utils";
@@ -19,7 +19,11 @@ export default function SearchPage() {
   const [searched, setSearched] = useState(false);
 
   const handleSearch = useCallback(async (q: string) => {
-    if (q.trim().length < 2) { setResults([]); setSearched(false); return; }
+    if (q.trim().length < 2) {
+      setResults([]);
+      setSearched(false);
+      return;
+    }
     setLoading(true);
     setSearched(true);
     try {
@@ -34,84 +38,188 @@ export default function SearchPage() {
 
   const onQueryChange = (q: string) => {
     setQuery(q);
-    const t = setTimeout(() => handleSearch(q), 400);
+    const t = setTimeout(() => handleSearch(q), 350);
     return () => clearTimeout(t);
   };
 
   return (
-    <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 24 }} className="animate-fade-in">
-      <div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f8fafc" }}>Search</h1>
-        <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Search prescriptions by patient name, phone, medicine, or summary</p>
+    <div style={{ minHeight: "100%", background: "var(--bg-canvas)" }}>
+      {/* Sticky Header */}
+      <div
+        className="clinical-header-bar"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          padding: "18px 36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+            Prescription Search Registry
+          </h1>
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>
+            Instant optical query across patient names, telephone numbers, medicine entities, and summaries
+          </p>
+        </div>
       </div>
 
-      <div style={{ position: "relative", maxWidth: 560 }}>
-        <Search size={20} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
-        <input
-          value={query} onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="e.g. Paracetamol, John Doe, 9876543210..."
-          style={{ width: "100%", padding: "14px 16px 14px 48px", borderRadius: 20, background: "#1e293b", border: "1px solid #334155", color: "#f8fafc", fontSize: 14, outline: "none", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(0,0,0,0.25)" }}
-        />
-        {loading && (
-          <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)" }}>
-            <div style={{ width: 16, height: 16, border: "2px solid #3b82f6", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+      <div style={{ padding: "32px 36px 60px", maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }} className="animate-fade-in">
+        {/* Search Bar */}
+        <div style={{ position: "relative", maxWidth: 640 }}>
+          <Search
+            size={18}
+            style={{
+              position: "absolute",
+              left: 16,
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--text-muted)",
+            }}
+          />
+          <input
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Search by medicine name, patient name, phone, or clinical symptom..."
+            style={{
+              width: "100%",
+              padding: "13px 48px 13px 48px",
+              borderRadius: 8,
+              background: "var(--input-bg)",
+              border: "1px solid var(--border-input)",
+              color: "var(--text-primary)",
+              fontSize: 14,
+              outline: "none",
+              fontFamily: "inherit",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+            }}
+          />
+          {loading && (
+            <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)" }}>
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  border: "2px solid var(--accent-primary)",
+                  borderTopColor: "transparent",
+                  borderRadius: "50%",
+                  animation: "spin 0.8s linear infinite",
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {!searched && (
+          <div className="clinical-card" style={{ padding: "64px 20px", textAlign: "center" }}>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--accent-subtle)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "var(--accent-primary)" }}>
+              <FileSearch size={24} />
+            </div>
+            <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 16 }}>
+              Query the Central Prescription Archive
+            </p>
+            <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 4, maxWidth: 380, marginInline: "auto" }}>
+              Type at least 2 characters to search across transcribed drug formulations, patient charts, and doctor instructions.
+            </p>
+          </div>
+        )}
+
+        {searched && !loading && results.length === 0 && (
+          <div className="clinical-card" style={{ padding: "64px 20px", textAlign: "center" }}>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "#f87171" }}>
+              <Search size={22} />
+            </div>
+            <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 16 }}>No clinical matches found</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 4 }}>
+              No prescription record matched "{query}". Try checking medication spelling or searching by phone.
+            </p>
+          </div>
+        )}
+
+        {results.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: "var(--accent-primary)", background: "var(--accent-subtle)", padding: "3px 8px", borderRadius: 4, border: "1px solid var(--accent-border)", fontWeight: 700 }}>
+                {results.length} MATCHING CLINICAL DOSSIER{results.length !== 1 ? "S" : ""}
+              </span>
+            </div>
+
+            <div className="clinical-card" style={{ overflow: "hidden" }}>
+              {results.map(({ prescription, patient }) => {
+                const tags = (prescription.tags as string[]) ?? [];
+                return (
+                  <Link
+                    key={prescription.id}
+                    to={`/prescriptions/${prescription.id}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                      padding: "16px 20px",
+                      borderBottom: "1px solid var(--border-subtle)",
+                      background: "var(--bg-surface)",
+                      textDecoration: "none",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-subtle)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-surface)")}
+                  >
+                    <div
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        background: "var(--accent-primary)",
+                      }}
+                    >
+                      {patient ? getInitials(patient.name) : "Rx"}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                          {patient?.name ?? "Unknown Patient"}
+                        </p>
+                        {prescription.important && (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.14)", padding: "1px 6px", borderRadius: 4, border: "1px solid rgba(245,158,11,0.3)" }}>
+                            <Star size={10} fill="#f59e0b" /> PRIORITY
+                          </span>
+                        )}
+                        <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>
+                          · {formatDate(prescription.createdAt)}
+                        </span>
+                      </div>
+
+                      <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {prescription.aiSummary || "Clinical prescription record"}
+                      </p>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+                        <OCRConfidenceIndicator confidence={prescription.ocrConfidence} />
+                        {tags.slice(0, 3).map((tag) => (
+                          <TagBadge key={tag} tag={tag} size="sm" />
+                        ))}
+                      </div>
+                    </div>
+
+                    <ArrowRight size={16} color="var(--text-muted)" />
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
-
-      {!searched && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", textAlign: "center" }}>
-          <div style={{ width: 64, height: 64, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", background: "#1e293b", marginBottom: 16 }}>
-            <FileSearch size={32} color="#475569" />
-          </div>
-          <p style={{ color: "#94a3b8", fontWeight: 600, fontSize: 16 }}>Search across all prescriptions</p>
-          <p style={{ color: "#475569", fontSize: 13, marginTop: 8, maxWidth: 320 }}>Find records by patient name, phone number, medicine name, or prescription content</p>
-        </div>
-      )}
-
-      {searched && !loading && results.length === 0 && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", textAlign: "center" }}>
-          <div style={{ width: 64, height: 64, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", background: "#1e293b", marginBottom: 16 }}>
-            <Search size={32} color="#475569" />
-          </div>
-          <p style={{ color: "#94a3b8", fontWeight: 600, fontSize: 16 }}>No results found</p>
-          <p style={{ color: "#475569", fontSize: 13, marginTop: 8 }}>Try a different search term</p>
-        </div>
-      )}
-
-      {results.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <p style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>{results.length} result{results.length !== 1 ? "s" : ""} found</p>
-          {results.map(({ prescription, patient }) => {
-            const tags = (prescription.tags as string[] ?? []);
-            return (
-              <Link
-                key={prescription.id} to={`/prescriptions/${prescription.id}`}
-                style={{ display: "flex", alignItems: "center", gap: 16, padding: 16, borderRadius: 12, border: "1px solid #1e293b", background: "rgba(15,23,42,0.5)", transition: "all 0.2s" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(30,41,59,0.6)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "#334155"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(15,23,42,0.5)"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "#1e293b"; }}
-              >
-                <div style={{ width: 44, height: 44, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 13, fontWeight: 700, flexShrink: 0, background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}>
-                  {patient ? getInitials(patient.name) : "?"}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{patient?.name ?? "Unknown Patient"}</p>
-                    {prescription.important && <Star size={14} color="#fbbf24" fill="#fbbf24" />}
-                    <span style={{ fontSize: 12, color: "#475569", flexShrink: 0 }}>{formatDate(prescription.createdAt)}</span>
-                  </div>
-                  <p style={{ fontSize: 12, color: "#64748b", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prescription.aiSummary || "No summary"}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                    <OCRConfidenceIndicator confidence={prescription.ocrConfidence} />
-                    {tags.slice(0, 3).map((tag) => <TagBadge key={tag} tag={tag} size="sm" />)}
-                  </div>
-                </div>
-                <ArrowRight size={16} color="#475569" />
-              </Link>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

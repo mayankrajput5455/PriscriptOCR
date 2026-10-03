@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { UserPlus, Search, Pencil, Trash2, Phone, Calendar, Users, ChevronRight, X } from "lucide-react";
+import { UserPlus, Search, Pencil, Trash2, Phone, Calendar, Users, ChevronRight, X, User } from "lucide-react";
 import { toast } from "sonner";
 import { PatientModal } from "../components/forms/PatientModal";
 import { getInitials, formatDate } from "../lib/utils";
@@ -17,9 +17,10 @@ export default function PatientsPage() {
   const fetchPatients = useCallback(async () => {
     setLoading(true);
     try {
-      const res = query.length >= 2
-        ? await api.get(`/patients/search?q=${encodeURIComponent(query)}`)
-        : await api.get("/patients");
+      const res =
+        query.length >= 2
+          ? await api.get(`/patients/search?q=${encodeURIComponent(query)}`)
+          : await api.get("/patients");
       setPatients(res.data.patients ?? []);
     } catch {
       setPatients([]);
@@ -37,100 +38,295 @@ export default function PatientsPage() {
     setDeleting(true);
     try {
       await api.delete(`/patients/${id}`);
-      toast.success("Patient deleted");
+      toast.success("Patient record archived");
       setDeleteConfirm(null);
       fetchPatients();
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Failed to delete");
+      toast.error(err?.response?.data?.error || "Failed to remove patient");
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <div style={{ minHeight: "100%" }}>
-      {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(15,23,42,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1e293b" }}>
+    <div style={{ minHeight: "100%", background: "var(--bg-canvas)" }}>
+      {/* Sticky Header */}
+      <div
+        className="clinical-header-bar"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          padding: "18px 36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#f8fafc" }}>Patients</h1>
-          <p style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>Manage and view patient records</p>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+            Patient Registry & Charts
+          </h1>
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>
+            Central clinical directory of indexed patients and histories
+          </p>
         </div>
+
         <PatientModal
           onSuccess={fetchPatients}
           trigger={
-            <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 12, fontSize: 14, fontWeight: 600, color: "white", background: "linear-gradient(135deg, #2563eb, #4f46e5)", border: "none", boxShadow: "0 4px 14px rgba(37,99,235,0.35)", cursor: "pointer" }}>
-              <UserPlus size={16} /> Add Patient
+            <button
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 18px",
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "white",
+                background: "var(--accent-primary)",
+                border: "none",
+                boxShadow: "0 2px 6px rgba(15,118,110,0.25)",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-primary-hover)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "var(--accent-primary)")}
+            >
+              <UserPlus size={15} /> Add Patient Chart
             </button>
           }
         />
       </div>
 
-      <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Search */}
-        <div style={{ position: "relative", maxWidth: 400 }}>
-          <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
-          <input
-            value={query} onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or phone..."
-            style={{ width: "100%", padding: "10px 40px 10px 42px", borderRadius: 12, background: "#111827", border: "1px solid #1e293b", color: "#f8fafc", fontSize: 14, outline: "none", fontFamily: "inherit" }}
-          />
-          {query && (
-            <button onClick={() => setQuery("")} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#64748b", cursor: "pointer" }}>
-              <X size={16} />
-            </button>
+      <div style={{ padding: "32px 36px 60px", maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* Search Bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ position: "relative", width: "100%", maxWidth: 440 }}>
+            <Search
+              size={15}
+              style={{
+                position: "absolute",
+                left: 14,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--text-muted)",
+              }}
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by legal name or phone number..."
+              style={{
+                width: "100%",
+                padding: "10px 38px 10px 38px",
+                borderRadius: 6,
+                background: "var(--input-bg)",
+                border: "1px solid var(--border-input)",
+                color: "var(--text-primary)",
+                fontSize: 13.5,
+                outline: "none",
+                fontFamily: "inherit",
+                boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
+              }}
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+
+          {!loading && (
+            <span style={{ fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: "var(--badge-text)", background: "var(--badge-bg)", padding: "4px 10px", borderRadius: 4, border: "1px solid var(--badge-border)", fontWeight: 600 }}>
+              INDEXED: {patients.length} RECORDS {query ? `[FILTERED]` : ""}
+            </span>
           )}
         </div>
 
-        {!loading && <p style={{ fontSize: 12, color: "#475569", fontWeight: 500 }}>{patients.length} patient{patients.length !== 1 ? "s" : ""}{query ? ` matching "${query}"` : " in the system"}</p>}
-
-        {/* Patient list */}
+        {/* Patient Ledger */}
         {loading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {[...Array(5)].map((_, i) => <div key={i} className="skeleton" style={{ height: 72, borderRadius: 12 }} />)}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="skeleton" style={{ height: 68, borderRadius: 8 }} />
+            ))}
           </div>
         ) : patients.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", borderRadius: 20, border: "1px dashed #1e293b", background: "rgba(15,23,42,0.4)", textAlign: "center" }}>
-            <div style={{ width: 64, height: 64, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", background: "#1e293b", marginBottom: 20 }}>
-              <Users size={32} color="#475569" />
+          <div className="clinical-card" style={{ padding: "64px 20px", textAlign: "center" }}>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "var(--text-muted)" }}>
+              <Users size={24} />
             </div>
-            <p style={{ color: "#cbd5e1", fontWeight: 600, fontSize: 16 }}>{query ? "No patients found" : "No patients yet"}</p>
-            <p style={{ color: "#475569", fontSize: 13, marginTop: 8 }}>{query ? `No results for "${query}"` : "Add your first patient to get started"}</p>
+            <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 16 }}>
+              {query ? "No clinical records matching search query" : "No patient charts registered"}
+            </p>
+            <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 4 }}>
+              {query ? `Try searching by another name or phone number` : "Begin by creating a new patient chart"}
+            </p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="clinical-card" style={{ overflow: "hidden" }}>
+            <div style={{ padding: "12px 20px", background: "var(--bg-surface-subtle)", borderBottom: "1px solid var(--border-subtle)", display: "grid", gridTemplateColumns: "2.5fr 1.5fr 1.5fr 100px", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <span>Patient Legal Name</span>
+              <span>Demographics</span>
+              <span>Contact / Registration</span>
+              <span style={{ textAlign: "right" }}>Actions</span>
+            </div>
+
             {patients.map((patient) => (
-              <div key={patient.id} className="patient-row" style={{ display: "flex", alignItems: "center", gap: 16, padding: 16, borderRadius: 12, background: "#0f172a", border: "1px solid #1e293b", transition: "all 0.2s", position: "relative" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "#1e293b"; (e.currentTarget as HTMLDivElement).style.borderColor = "#334155"; const btns = (e.currentTarget as HTMLDivElement).querySelector(".patient-actions") as HTMLDivElement; if (btns) btns.style.opacity = "1"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "#0f172a"; (e.currentTarget as HTMLDivElement).style.borderColor = "#1e293b"; const btns = (e.currentTarget as HTMLDivElement).querySelector(".patient-actions") as HTMLDivElement; if (btns) btns.style.opacity = "0"; }}
+              <div
+                key={patient.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "2.5fr 1.5fr 1.5fr 100px",
+                  alignItems: "center",
+                  padding: "16px 20px",
+                  borderBottom: "1px solid var(--border-subtle)",
+                  background: "var(--bg-surface)",
+                  transition: "background 0.15s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-subtle)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-surface)")}
               >
-                <div style={{ width: 44, height: 44, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 14, fontWeight: 700, flexShrink: 0, background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}>
-                  {getInitials(patient.name)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{patient.name}</p>
-                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "#1e293b", color: "#94a3b8", border: "1px solid #334155", flexShrink: 0 }}>{patient.gender}</span>
-                    <span style={{ fontSize: 12, color: "#64748b", flexShrink: 0 }}>{patient.age} yrs</span>
+                {/* Name & Initials */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 6,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      flexShrink: 0,
+                      background: "var(--accent-primary)",
+                    }}
+                  >
+                    {getInitials(patient.name)}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 4 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#64748b" }}><Phone size={12} />{patient.phone}</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#475569" }}><Calendar size={12} />Added {formatDate(patient.createdAt)}</span>
+                  <div>
+                    <Link
+                      to={`/patients/${patient.id}`}
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "var(--text-primary)",
+                        textDecoration: "none",
+                        transition: "color 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-primary)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
+                    >
+                      {patient.name}
+                    </Link>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
+                      ID: {patient.id.slice(0, 8).toUpperCase()}
+                    </p>
                   </div>
                 </div>
-                <div className="patient-actions" style={{ display: "flex", alignItems: "center", gap: 6, opacity: 0, transition: "opacity 0.2s" }}>
+
+                {/* Demographics */}
+                <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+                  <span style={{ fontWeight: 600 }}>{patient.age} yrs</span> · {patient.gender}
+                </div>
+
+                {/* Contact */}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-primary)", fontWeight: 500 }}>
+                    <Phone size={12} color="var(--text-muted)" /> {patient.phone}
+                  </div>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                    Joined {formatDate(patient.createdAt)}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
                   <PatientModal
-                    patient={patient} onSuccess={fetchPatients}
+                    patient={patient}
+                    onSuccess={fetchPatients}
                     trigger={
-                      <button style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#1e293b", border: "none", color: "#64748b", cursor: "pointer", transition: "color 0.2s" }}>
-                        <Pencil size={14} />
+                      <button
+                        title="Edit chart"
+                        style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: 6,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "var(--bg-surface)",
+                          border: "1px solid var(--border-color)",
+                          color: "var(--text-muted)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Pencil size={13} />
                       </button>
                     }
                   />
-                  <button onClick={() => setDeleteConfirm(patient.id)} style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#1e293b", border: "none", color: "#64748b", cursor: "pointer" }}>
-                    <Trash2 size={14} />
+
+                  <button
+                    onClick={() => setDeleteConfirm(patient.id)}
+                    title="Archive chart"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 6,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "var(--bg-surface)",
+                      border: "1px solid var(--border-color)",
+                      color: "var(--text-muted)",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#dc2626";
+                      e.currentTarget.style.borderColor = "#fecaca";
+                      e.currentTarget.style.background = "rgba(220, 38, 38, 0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--text-muted)";
+                      e.currentTarget.style.borderColor = "var(--border-color)";
+                      e.currentTarget.style.background = "var(--bg-surface)";
+                    }}
+                  >
+                    <Trash2 size={13} />
                   </button>
-                  <Link to={`/patients/${patient.id}`} style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#1e293b", color: "#64748b" }}>
-                    <ChevronRight size={16} />
+
+                  <Link
+                    to={`/patients/${patient.id}`}
+                    title="Open Chart"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 6,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "var(--accent-subtle)",
+                      border: "1px solid var(--accent-border)",
+                      color: "var(--accent-primary)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <ChevronRight size={14} />
                   </Link>
                 </div>
               </div>
@@ -139,20 +335,69 @@ export default function PatientsPage() {
         )}
       </div>
 
-      {/* Delete confirm modal */}
+      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }} onClick={() => setDeleteConfirm(null)} />
-          <div className="animate-fade-in" style={{ position: "relative", width: "100%", maxWidth: 380, borderRadius: 20, padding: 24, background: "#0f172a", border: "1px solid #1e293b", boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
-            <div style={{ width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 16 }}>
-              <Trash2 size={20} color="#f87171" />
+          <div
+            style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
+            onClick={() => setDeleteConfirm(null)}
+          />
+          <div
+            className="animate-fade-in"
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: 380,
+              borderRadius: 10,
+              padding: 24,
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              boxShadow: "var(--card-shadow)",
+            }}
+          >
+            <div style={{ width: 44, height: 44, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(220, 38, 38, 0.15)", border: "1px solid rgba(220, 38, 38, 0.3)", marginBottom: 16 }}>
+              <Trash2 size={20} color="#ef4444" />
             </div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f8fafc", marginBottom: 4 }}>Delete Patient?</h3>
-            <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 24, lineHeight: 1.6 }}>This will permanently delete the patient and all their prescriptions. This cannot be undone.</p>
-            <div style={{ display: "flex", gap: 12 }}>
-              <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: "10px 16px", borderRadius: 12, border: "1px solid #1e293b", background: "#111827", color: "#94a3b8", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>Cancel</button>
-              <button onClick={() => handleDelete(deleteConfirm)} disabled={deleting} style={{ flex: 1, padding: "10px 16px", borderRadius: 12, border: "none", background: "#dc2626", color: "white", fontSize: 14, fontWeight: 600, cursor: deleting ? "not-allowed" : "pointer", opacity: deleting ? 0.7 : 1 }}>
-                {deleting ? "Deleting..." : "Delete"}
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+              Archive Patient Chart?
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.6 }}>
+              This will permanently delete this patient record and all related prescriptions from the registry.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                style={{
+                  flex: 1,
+                  padding: "9px 14px",
+                  borderRadius: 6,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-surface-subtle)",
+                  color: "var(--text-secondary)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm)}
+                disabled={deleting}
+                style={{
+                  flex: 1,
+                  padding: "9px 14px",
+                  borderRadius: 6,
+                  border: "none",
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: deleting ? "not-allowed" : "pointer",
+                  opacity: deleting ? 0.7 : 1,
+                }}
+              >
+                {deleting ? "Archiving..." : "Archive Record"}
               </button>
             </div>
           </div>

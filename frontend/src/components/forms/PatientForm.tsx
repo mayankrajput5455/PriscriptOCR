@@ -12,15 +12,25 @@ interface PatientFormProps {
 const genders = ["Male", "Female", "Other"];
 
 const inputStyle = {
-  width: "100%", padding: "10px 12px", borderRadius: 8,
-  background: "#1e293b", border: "1px solid #334155",
-  color: "#f8fafc", fontSize: 14, outline: "none",
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: 6,
+  background: "var(--input-bg)",
+  border: "1px solid var(--border-input)",
+  color: "var(--text-primary)",
+  fontSize: 13.5,
+  outline: "none",
   fontFamily: "inherit",
 };
 
 const labelStyle = {
-  display: "block", fontSize: 11, fontWeight: 600,
-  color: "#94a3b8", marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.05em",
+  display: "block",
+  fontSize: 11,
+  fontWeight: 700,
+  color: "var(--text-secondary)",
+  marginBottom: 6,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.06em",
 };
 
 export function PatientForm({ patient, onClose, onSuccess }: PatientFormProps) {
@@ -41,15 +51,15 @@ export function PatientForm({ patient, onClose, onSuccess }: PatientFormProps) {
     try {
       if (patient) {
         await api.put(`/patients/${patient.id}`, data);
-        toast.success("Patient updated!");
+        toast.success("Patient chart updated");
       } else {
         await api.post("/patients", data);
-        toast.success("Patient added successfully!");
+        toast.success("New patient registered");
       }
       onSuccess?.();
       onClose();
     } catch (err: any) {
-      const msg = err?.response?.data?.error || "Something went wrong";
+      const msg = err?.response?.data?.error || "Failed to save record";
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -59,7 +69,7 @@ export function PatientForm({ patient, onClose, onSuccess }: PatientFormProps) {
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div>
-        <label style={labelStyle}>Full Name *</label>
+        <label style={labelStyle}>Patient Full Legal Name *</label>
         <input
           name="name"
           defaultValue={patient?.name}
@@ -73,53 +83,84 @@ export function PatientForm({ patient, onClose, onSuccess }: PatientFormProps) {
         <div>
           <label style={labelStyle}>Age *</label>
           <input
-            name="age" type="number" min={0} max={150}
+            name="age"
+            type="number"
+            min={0}
+            max={150}
             defaultValue={patient?.age}
             placeholder="e.g. 35"
-            required style={inputStyle}
+            required
+            style={inputStyle}
           />
         </div>
         <div>
-          <label style={labelStyle}>Gender *</label>
-          <select name="gender" defaultValue={patient?.gender ?? ""} required style={{ ...inputStyle, cursor: "pointer" }}>
-            <option value="" disabled>Select...</option>
-            {genders.map((g) => <option key={g} value={g}>{g}</option>)}
+          <label style={labelStyle}>Gender / Biological Sex *</label>
+          <select
+            name="gender"
+            defaultValue={patient?.gender ?? ""}
+            required
+            style={{ ...inputStyle, cursor: "pointer" }}
+          >
+            <option value="" disabled>
+              Select gender...
+            </option>
+            {genders.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       <div>
-        <label style={labelStyle}>Phone Number *</label>
+        <label style={labelStyle}>Contact Telephone / Mobile *</label>
         <input
-          name="phone" type="tel"
+          name="phone"
+          type="tel"
           defaultValue={patient?.phone}
-          placeholder="e.g. 9876543210"
-          required style={inputStyle}
+          placeholder="e.g. +91 98765 43210"
+          required
+          style={inputStyle}
         />
       </div>
 
-      <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
+      <div style={{ display: "flex", gap: 10, paddingTop: 10, borderTop: "1px solid var(--border-subtle)" }}>
         <button
-          type="button" onClick={onClose}
+          type="button"
+          onClick={onClose}
           style={{
-            flex: 1, padding: "10px 16px", borderRadius: 8,
-            border: "1px solid #334155", background: "transparent",
-            color: "#94a3b8", fontSize: 14, fontWeight: 500, cursor: "pointer",
+            flex: 1,
+            padding: "9px 16px",
+            borderRadius: 6,
+            border: "1px solid var(--border-color)",
+            background: "var(--bg-surface-subtle)",
+            color: "var(--text-secondary)",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
           }}
         >
           Cancel
         </button>
         <button
-          type="submit" disabled={loading}
+          type="submit"
+          disabled={loading}
           style={{
-            flex: 1, padding: "10px 16px", borderRadius: 8,
-            background: "#2563eb", border: "none",
-            color: "white", fontSize: 14, fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
-            boxShadow: "0 4px 14px rgba(37,99,235,0.3)",
+            flex: 1,
+            padding: "9px 16px",
+            borderRadius: 6,
+            background: "var(--accent-primary)",
+            border: "none",
+            color: "white",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
+            boxShadow: "0 2px 6px rgba(15,118,110,0.25)",
           }}
         >
-          {loading ? "Saving..." : patient ? "Save Changes" : "Add Patient"}
+          {loading ? "Registering..." : patient ? "Save Patient Record" : "Register Patient"}
         </button>
       </div>
     </form>

@@ -13,6 +13,8 @@ export interface Medicine {
   name: string;
   dosage: string;
   frequency: string;
+  form?: string;
+  instructions?: string;
 }
 
 export interface Prescription {

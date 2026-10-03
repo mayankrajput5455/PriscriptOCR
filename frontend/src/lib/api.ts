@@ -33,7 +33,7 @@ api.interceptors.response.use(
   },
   (error) => {
     const url = error.config?.url || "";
-    const isAuthCheck = url.includes("/auth/me") || url.includes("/auth/login");
+    const isAuthCheck = url.includes("/auth/me") || url.includes("/auth/login") || url.includes("/auth/logout");
     const isPublicRoute =
       window.location.pathname.startsWith("/login") ||
       window.location.pathname.startsWith("/signup") ||

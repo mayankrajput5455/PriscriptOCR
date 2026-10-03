@@ -1,9 +1,11 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Activity, Mail, Lock, ArrowRight, Sparkles, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import api, { BACKEND_URL } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { Logo } from "../components/common/Logo";
+import { ThemeToggle } from "../components/common/ThemeToggle";
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -20,6 +22,14 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
 
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    if (oauthError) {
+      setError(oauthError);
+      toast.error(oauthError);
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -34,7 +44,7 @@ function LoginForm() {
     } catch (err: any) {
       const data = err?.response?.data;
       if (data?.unverified && data?.email) setUnverifiedEmail(data.email);
-      const msg = data?.error || "Invalid credentials";
+      const msg = data?.error || "Invalid login credentials";
       setError(msg);
       toast.error(msg);
     } finally {
@@ -43,48 +53,65 @@ function LoginForm() {
   };
 
   const inputStyle = {
-    width: "100%", padding: "12px 16px 12px 42px",
-    borderRadius: 12, background: "rgba(15,23,42,0.8)",
-    border: "1px solid #1e293b", color: "#f1f5f9",
-    fontSize: 14, outline: "none", fontFamily: "inherit",
+    width: "100%",
+    padding: "11px 16px 11px 40px",
+    borderRadius: 6,
+    background: "var(--input-bg)",
+    border: "1px solid var(--border-input)",
+    color: "var(--text-primary)",
+    fontSize: 13.5,
+    outline: "none",
+    fontFamily: "inherit",
   };
 
   return (
-    <div className="animate-fade-in" style={{ width: "100%", maxWidth: 440, position: "relative", zIndex: 10 }}>
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          width: 56, height: 56, borderRadius: 16, marginBottom: 16,
-          background: "linear-gradient(135deg, #2563eb, #4f46e5)",
-          boxShadow: "0 8px 25px rgba(37,99,235,0.35)", border: "1px solid rgba(99,102,241,0.4)",
-        }}>
-          <Activity size={28} color="white" />
+    <div className="animate-fade-in" style={{ width: "100%", maxWidth: 420 }}>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <div style={{ display: "inline-block", marginBottom: 12 }}>
+          <Logo size="lg" to="/" subtitle="Physician Portal" />
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", letterSpacing: "-0.025em" }}>
-          Prescript<span style={{ color: "#60a5fa" }}>OCR</span>
-        </h1>
-        <p style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
-          Sign in to access your clinic's digital prescription archive
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
+          Sign in to access your clinic's digitized prescription dossiers
         </p>
       </div>
 
       {isRegistered && (
-        <div style={{ marginBottom: 16, padding: 16, borderRadius: 16, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)", display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#34d399", flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#6ee7b7" }}>Email verified! Please enter your password to sign in.</span>
+        <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 6, background: "rgba(22, 163, 74, 0.12)", border: "1px solid rgba(22, 163, 74, 0.3)", display: "flex", alignItems: "center", gap: 10 }}>
+          <CheckCircle2 size={16} color="#16a34a" />
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: "#22c55e" }}>Email confirmed. Enter your password to sign in.</span>
         </div>
       )}
 
-      <div style={{ padding: 32, borderRadius: 24, background: "rgba(15,23,42,0.75)", border: "1px solid rgba(51,65,85,0.6)", backdropFilter: "blur(20px)", boxShadow: "0 20px 40px -15px rgba(0,0,0,0.5)" }}>
-        {/* Google OAuth */}
+      <div
+        className="clinical-card"
+        style={{
+          padding: "32px 28px",
+          borderTop: "4px solid var(--accent-primary)",
+        }}
+      >
+        {/* Google OAuth Button */}
         <button
           type="button"
-          onClick={() => { window.location.href = `${BACKEND_URL}/api/auth/google?from=${encodeURIComponent(from)}`; }}
+          onClick={() => {
+            window.location.href = `${BACKEND_URL}/api/auth/google?from=${encodeURIComponent(from)}`;
+          }}
           style={{
-            width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 12, padding: "12px 16px", borderRadius: 12, background: "#1e293b",
-            border: "1px solid #334155", color: "#e2e8f0", fontSize: 14, fontWeight: 600,
-            cursor: "pointer", marginBottom: 20, transition: "all 0.2s",
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            padding: "10px 16px",
+            borderRadius: 6,
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-color)",
+            color: "var(--text-primary)",
+            fontSize: 13.5,
+            fontWeight: 600,
+            cursor: "pointer",
+            marginBottom: 20,
+            boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
+            transition: "all 0.15s ease",
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24">
@@ -97,74 +124,99 @@ function LoginForm() {
         </button>
 
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-          <div style={{ width: "100%", borderTop: "1px solid #1e293b" }} />
-          <span style={{ position: "absolute", background: "#0f172a", padding: "0 12px", fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-            Or with email
+          <div style={{ width: "100%", borderTop: "1px solid var(--border-color)" }} />
+          <span style={{ position: "absolute", background: "var(--bg-surface)", padding: "0 10px", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Or with clinic credentials
           </span>
         </div>
 
         {error && (
-          <div style={{ marginBottom: 20, padding: 14, borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f87171", flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: "#fca5a5" }}>{error}</span>
-            </div>
-            {unverifiedEmail && (
-              <Link to={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 8, fontSize: 12, fontWeight: 700, color: "#60a5fa" }}>
-                Enter Verification Code →
-              </Link>
-            )}
+          <div style={{ marginBottom: 20, padding: "10px 14px", borderRadius: 6, background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.3)", fontSize: 12.5, color: "#f87171" }}>
+            {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Email Address</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>
+              Physician Email Address
+            </label>
             <div style={{ position: "relative" }}>
-              <Mail size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="doctor@clinic.com" style={inputStyle} />
+              <Mail size={15} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="doctor@hospital.org"
+                style={inputStyle}
+              />
             </div>
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Password</label>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Secret Passcode
+              </label>
+            </div>
             <div style={{ position: "relative" }}>
-              <Lock size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
-              <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={{ ...inputStyle, paddingRight: 44 }} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#64748b", cursor: "pointer" }}>
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              <Lock size={15} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                style={{ ...inputStyle, paddingRight: 40 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
           </div>
 
           <button
-            type="submit" disabled={loading}
+            type="submit"
+            disabled={loading}
             style={{
-              width: "100%", marginTop: 8, padding: "14px 16px", borderRadius: 12,
-              background: "linear-gradient(135deg, #2563eb, #4f46e5)", border: "none",
-              color: "white", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              boxShadow: "0 6px 20px rgba(37,99,235,0.4)", transition: "all 0.2s",
+              width: "100%",
+              marginTop: 6,
+              padding: "11px 16px",
+              borderRadius: 6,
+              background: "var(--accent-primary)",
+              border: "none",
+              color: "white",
+              fontSize: 13.5,
+              fontWeight: 700,
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.7 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: "0 2px 6px rgba(15,118,110,0.25)",
             }}
           >
-            {loading ? <div style={{ width: 20, height: 20, border: "2px solid white", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} /> : <><span>Sign In to Clinic</span><ArrowRight size={16} /></>}
+            {loading ? "Authenticating..." : <><span>Access Clinical Console</span><ArrowRight size={15} /></>}
           </button>
         </form>
 
-        <div style={{ marginTop: 24, paddingTop: 24, borderTop: "1px solid #1e293b", textAlign: "center" }}>
-          <p style={{ fontSize: 12, color: "#64748b" }}>
-            New doctor or clinic?{" "}
-            <Link to="/signup" style={{ fontWeight: 600, color: "#60a5fa" }}>Create an account</Link>
+        <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border-subtle)", textAlign: "center" }}>
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+            New medical practitioner?{" "}
+            <Link to="/signup" style={{ fontWeight: 700, color: "var(--accent-primary)" }}>Register clinic chart</Link>
           </p>
         </div>
       </div>
 
-      <div style={{ marginTop: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#475569" }}>
-          <ShieldCheck size={16} color="#34d399" /> Encrypted HIPAA Cloud
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#475569" }}>
-          <Sparkles size={16} color="#a78bfa" /> Gemini Vision 2.5
+      <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
+          <ShieldCheck size={14} color="var(--accent-primary)" /> AUDITED CLINICAL REPOSITORY
         </div>
       </div>
     </div>
@@ -173,9 +225,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "#0f172a", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: -160, left: -160, width: 384, height: 384, borderRadius: "50%", background: "radial-gradient(circle, #3b82f6 0%, transparent 70%)", opacity: 0.2, pointerEvents: "none", filter: "blur(40px)" }} />
-      <div style={{ position: "absolute", bottom: -160, right: -160, width: 384, height: 384, borderRadius: "50%", background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)", opacity: 0.2, pointerEvents: "none", filter: "blur(40px)" }} />
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "var(--bg-canvas)", position: "relative" }}>
+      <div style={{ position: "absolute", top: 20, right: 24 }}>
+        <ThemeToggle size="sm" />
+      </div>
       <LoginForm />
     </div>
   );

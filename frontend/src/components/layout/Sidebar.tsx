@@ -9,16 +9,21 @@ import {
   ChevronRight,
   LogOut,
   UserCheck,
+  Globe,
+  FileSpreadsheet,
+  ShieldCheck,
 } from "lucide-react";
 import { cn, getInitials } from "../../lib/utils";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
+import { Logo } from "../common/Logo";
+import { ThemeToggle } from "../common/ThemeToggle";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Patients", href: "/patients", icon: Users },
-  { label: "Upload", href: "/upload", icon: Upload },
-  { label: "Search", href: "/search", icon: Search },
+  { label: "Patients & Charts", href: "/patients", icon: Users },
+  { label: "Scan Prescription", href: "/upload", icon: Upload },
+  { label: "Search Registry", href: "/search", icon: Search },
 ];
 
 export function Sidebar() {
@@ -48,44 +53,39 @@ export function Sidebar() {
   return (
     <aside
       style={{
-        width: 256,
+        width: 260,
         height: "100vh",
+        position: "sticky",
+        top: 0,
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
-        background: "linear-gradient(180deg, #0d1526 0%, #0f172a 100%)",
-        borderRight: "1px solid #1e293b",
+        zIndex: 40,
+        background: "var(--bg-surface)",
+        borderRight: "1px solid var(--border-color)",
+        boxShadow: "2px 0 12px rgba(15, 23, 42, 0.02)",
+        transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
-      {/* Logo */}
-      <div style={{ padding: "20px", borderBottom: "1px solid #1e293b" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div
-            style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
-              boxShadow: "0 4px 14px rgba(59,130,246,0.35)",
-            }}
-          >
-            <Activity size={16} color="white" />
-          </div>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "#f8fafc", lineHeight: 1, marginBottom: 2 }}>
-              PrescriptOCR
-            </p>
-            <p style={{ fontSize: 12, color: "#64748b" }}>Medical AI Platform</p>
-          </div>
-        </div>
+      {/* Brand Header */}
+      <div style={{ padding: "18px 20px", borderBottom: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Logo size="md" subtitle="Clinical Dossier" to="/dashboard" />
+        <ThemeToggle size="sm" />
       </div>
 
-      {/* Navigation */}
-      <nav style={{ flex: 1, padding: "20px 12px", overflowY: "auto" }}>
-        <p style={{ padding: "0 12px", marginBottom: 12, fontSize: 11, fontWeight: 600, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-          Navigation
-        </p>
+      {/* Navigation Section */}
+      <nav style={{ flex: 1, padding: "20px 14px", overflowY: "auto" }}>
+        <div style={{ padding: "0 10px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Clinical Console
+          </p>
+          <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono', monospace", color: "var(--accent-primary)", background: "var(--accent-subtle)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--accent-border)", fontWeight: 700 }}>
+            v2.4
+          </span>
+        </div>
+
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           const Icon = item.icon;
           return (
             <Link
@@ -95,84 +95,117 @@ export function Sidebar() {
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "10px 12px",
-                borderRadius: 12,
-                fontSize: 14,
+                padding: "10px 14px",
+                borderRadius: 8,
+                fontSize: 13.5,
                 fontWeight: isActive ? 600 : 500,
-                color: isActive ? "#93c5fd" : "#94a3b8",
-                transition: "all 0.2s",
+                color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
                 marginBottom: 4,
-                background: isActive ? "rgba(59,130,246,0.12)" : "transparent",
-                border: isActive ? "1px solid rgba(59,130,246,0.2)" : "1px solid transparent",
+                background: isActive ? "var(--accent-subtle)" : "transparent",
+                border: isActive ? "1px solid var(--accent-border)" : "1px solid transparent",
                 textDecoration: "none",
+                transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(51,65,85,0.4)";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#f1f5f9";
+                  e.currentTarget.style.background = "var(--bg-muted)";
+                  e.currentTarget.style.color = "var(--text-primary)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-                  (e.currentTarget as HTMLAnchorElement).style.color = "#94a3b8";
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--text-secondary)";
                 }
               }}
             >
-              <Icon size={16} style={{ flexShrink: 0, color: isActive ? "#60a5fa" : "#64748b" }} />
+              <Icon size={18} color={isActive ? "var(--accent-primary)" : "var(--text-muted)"} strokeWidth={isActive ? 2.2 : 1.8} />
               <span style={{ flex: 1 }}>{item.label}</span>
-              {isActive && <ChevronRight size={14} style={{ color: "#60a5fa", opacity: 0.5 }} />}
+              {isActive && (
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-primary)" }} />
+              )}
             </Link>
           );
         })}
+
+        {/* Clinical Audit Stamp Callout */}
+        <div style={{ marginTop: 28, marginInline: 4, padding: "14px", borderRadius: 10, background: "var(--bg-surface-subtle)", border: "1px solid var(--border-color)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <ShieldCheck size={16} color="var(--accent-primary)" />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-primary)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono', monospace" }}>
+              Medical OCR Engine
+            </span>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
+            Google Gemini Multimodal AI with calibrated drug formulary cross-checks.
+          </p>
+        </div>
       </nav>
 
-      {/* User Profile & Logout */}
-      <div style={{ padding: 12, borderTop: "1px solid #1e293b" }}>
-        <div
-          style={{
-            padding: 12, borderRadius: 12, marginBottom: 8,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "rgba(30,41,59,0.5)", border: "1px solid #1e293b",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <div
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                color: "white", fontSize: 12, fontWeight: 700, flexShrink: 0,
-              }}
-            >
-              {user ? getInitials(user.name) : <UserCheck size={16} />}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user ? user.name : "Dr. On Duty"}
-              </p>
-              <p style={{ fontSize: 11, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user?.clinicName || "Clinic Portal"}
-              </p>
-            </div>
+      {/* User Clinician Profile Footer */}
+      <div style={{ padding: "16px", borderTop: "1px solid var(--border-subtle)", background: "var(--bg-surface-subtle)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#0f766e",
+              color: "#ffffff",
+              fontSize: 13,
+              fontWeight: 700,
+              flexShrink: 0,
+              boxShadow: "0 2px 4px rgba(15,118,110,0.2)",
+            }}
+          >
+            {getInitials(user?.name || "Dr")}
           </div>
-        </div>
 
-        <button
-          onClick={handleLogout}
-          disabled={loggingOut}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 8, padding: "8px 12px", borderRadius: 12, fontSize: 12, fontWeight: 600,
-            color: "#f87171", background: "transparent",
-            border: "1px solid rgba(239,68,68,0.2)", cursor: "pointer",
-            transition: "all 0.2s", opacity: loggingOut ? 0.7 : 1,
-          }}
-        >
-          <LogOut size={14} />
-          {loggingOut ? "Logging out..." : "Sign Out"}
-        </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user?.name || "Practitioner"}
+            </p>
+            <p style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user?.email || "Medical Staff"}
+            </p>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            title="Sign out of console"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid var(--border-color)",
+              background: "var(--bg-surface)",
+              color: "var(--text-muted)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#dc2626";
+              e.currentTarget.style.borderColor = "#fca5a5";
+              e.currentTarget.style.background = "#fef2f2";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-muted)";
+              e.currentTarget.style.borderColor = "var(--border-color)";
+              e.currentTarget.style.background = "var(--bg-surface)";
+            }}
+          >
+            <LogOut size={15} />
+          </button>
+        </div>
       </div>
     </aside>
   );
 }
+export default Sidebar;

@@ -174,7 +174,9 @@ router.get("/google", (req, res) => {
     res.status(500).json({ error: "Google OAuth is not configured" });
     return;
   }
-  const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI ||
+    `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
   const from = (req.query.from as string) || "/dashboard";
   const state = Buffer.from(JSON.stringify({ from })).toString("base64");
 
@@ -210,7 +212,9 @@ router.get("/google/callback", async (req, res) => {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+    const redirectUri =
+      process.env.GOOGLE_REDIRECT_URI ||
+      `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
 
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",

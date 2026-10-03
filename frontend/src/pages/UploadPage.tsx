@@ -6,17 +6,17 @@ import { ProcessingSteps } from "../components/upload/ProcessingSteps";
 import { MedicineBadge } from "../components/prescription/MedicineBadge";
 import { TagBadge } from "../components/prescription/TagBadge";
 import { OCRConfidenceIndicator } from "../components/prescription/OCRConfidenceIndicator";
-import { Users, CheckCircle, ArrowRight, Sparkles, RotateCcw } from "lucide-react";
+import { Users, CheckCircle2, ArrowRight, ShieldCheck, RotateCcw, FileText, Check, Cpu } from "lucide-react";
 import type { Patient, Medicine, GeminiResponse } from "../types";
 import api from "../lib/api";
 
 type Stage = "select" | "processing" | "review" | "saving" | "done";
 
 const PROCESSING_STEPS = [
-  { label: "Uploading Image", description: "Securely transferring to Cloudinary" },
-  { label: "Preprocessing", description: "Enhancing image quality for OCR" },
-  { label: "Gemini Vision OCR", description: "AI reading the prescription" },
-  { label: "Analysis Complete", description: "Extracting medicines and summary" },
+  { label: "Document Ingestion", description: "Securely transferring specimen to clinical storage" },
+  { label: "Optical Image Enhancement", description: "Calibrating contrast and binarizing prescription contours" },
+  { label: "Google Gemini Clinical OCR", description: "Deciphering handwriting and doctor notations" },
+  { label: "Formulary Extraction", description: "Cross-referencing medications, dosages, and diagnostic tags" },
 ];
 
 export default function UploadPage() {
@@ -46,7 +46,7 @@ export default function UploadPage() {
 
   const handleProcess = async () => {
     if (!selectedFile || !selectedPatientId) {
-      toast.error("Please select a patient and a prescription image first.");
+      toast.error("Please select a patient chart and a prescription specimen.");
       return;
     }
 
@@ -75,11 +75,11 @@ export default function UploadPage() {
         setGeminiResult(res.data.gemini);
         setTimeout(() => setStage("review"), 500);
       } else {
-        throw new Error(res.data.error || "Processing failed");
+        throw new Error(res.data.error || "OCR digitization failed");
       }
     } catch (err: any) {
       clearInterval(stepInterval);
-      toast.error(err?.response?.data?.error || err?.message || "Processing failed");
+      toast.error(err?.response?.data?.error || err?.message || "Transcription failed");
       setStage("select");
     }
   };
@@ -104,9 +104,9 @@ export default function UploadPage() {
 
       setSavedPrescriptionId(res.data.prescription.id);
       setStage("done");
-      toast.success("Prescription saved successfully!");
+      toast.success("Prescription filed to patient chart");
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Failed to save prescription");
+      toast.error(err?.response?.data?.error || "Failed to commit record");
       setStage("review");
     }
   };
@@ -126,28 +126,92 @@ export default function UploadPage() {
   const selectedPatient = patients.find((p) => p.id === selectedPatientId);
 
   const inputStyle = {
-    width: "100%", padding: "10px 12px", borderRadius: 10,
-    background: "#111827", border: "1px solid #1e293b",
-    color: "#f8fafc", fontSize: 14, outline: "none", fontFamily: "inherit",
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 6,
+    background: "var(--input-bg)",
+    border: "1px solid var(--border-input)",
+    color: "var(--text-primary)",
+    fontSize: 13.5,
+    outline: "none",
+    fontFamily: "inherit",
   };
 
   // ── Done ──────────────────────────────────────────────────────────────────────
   if (stage === "done") {
     return (
-      <div style={{ padding: 32, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100%", textAlign: "center" }} className="animate-fade-in">
-        <div style={{ width: 72, height: 72, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", marginBottom: 24 }}>
-          <CheckCircle size={36} color="#34d399" />
+      <div
+        style={{
+          padding: "60px 24px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100%",
+          background: "var(--bg-canvas)",
+          textAlign: "center",
+        }}
+        className="animate-fade-in"
+      >
+        <div
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(22, 163, 74, 0.14)",
+            border: "1.5px solid rgba(34, 197, 94, 0.35)",
+            color: "#22c55e",
+            marginBottom: 20,
+          }}
+        >
+          <CheckCircle2 size={32} />
         </div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f8fafc", marginBottom: 8 }}>Prescription Saved!</h2>
-        <p style={{ fontSize: 14, color: "#64748b", marginBottom: 32, maxWidth: 380 }}>
-          The prescription has been digitized and saved to {selectedPatient?.name}'s record.
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>
+          Prescription Record Committed
+        </h2>
+        <p style={{ fontSize: 13.5, color: "var(--text-muted)", marginBottom: 28, maxWidth: 420 }}>
+          The prescription has been audited, transcribed, and indexed into {selectedPatient?.name}'s medical chart.
         </p>
-        <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={handleReset} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "1px solid #1e293b", background: "#111827", color: "#94a3b8", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
-            <RotateCcw size={16} /> Upload Another
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={handleReset}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 18px",
+              borderRadius: 6,
+              border: "1px solid var(--border-color)",
+              background: "var(--bg-surface)",
+              color: "var(--text-secondary)",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={15} /> Ingest Another
           </button>
-          <button onClick={() => navigate(`/prescriptions/${savedPrescriptionId}`)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg, #2563eb, #4f46e5)", border: "none", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-            View Prescription <ArrowRight size={16} />
+          <button
+            onClick={() => navigate(`/prescriptions/${savedPrescriptionId}`)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 20px",
+              borderRadius: 6,
+              background: "var(--accent-primary)",
+              border: "none",
+              color: "white",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(15,118,110,0.25)",
+            }}
+          >
+            Open Clinical Dossier <ArrowRight size={15} />
           </button>
         </div>
       </div>
@@ -157,20 +221,30 @@ export default function UploadPage() {
   // ── Processing ─────────────────────────────────────────────────────────────────
   if (stage === "processing") {
     return (
-      <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 24 }} className="animate-fade-in">
+      <div style={{ padding: "36px 40px", display: "flex", flexDirection: "column", gap: 24, maxWidth: 640, margin: "0 auto", minHeight: "100%", background: "var(--bg-canvas)" }} className="animate-fade-in">
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#f8fafc" }}>Processing Prescription</h1>
-          <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>AI is analyzing the prescription image...</p>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+            Processing Prescription Specimen
+          </h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
+            Optical OCR and clinical entity extraction in progress
+          </p>
         </div>
-        <div style={{ maxWidth: 500 }}>
+
+        <div className="clinical-card" style={{ padding: 24 }}>
           <ProcessingSteps steps={PROCESSING_STEPS} currentStep={processingStep} />
         </div>
-        <div style={{ padding: 20, borderRadius: 16, border: "1px solid rgba(99,102,241,0.2)", background: "rgba(99,102,241,0.05)", maxWidth: 500 }}>
+
+        <div style={{ padding: "16px 20px", borderRadius: 8, border: "1px solid var(--accent-border)", background: "var(--accent-subtle)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Sparkles size={18} color="#a78bfa" />
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#c4b5fd" }}>Gemini Vision 2.5 at work</p>
+            <ShieldCheck size={18} color="var(--accent-primary)" />
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--accent-primary)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono', monospace" }}>
+              Clinical Intelligence Pipeline
+            </p>
           </div>
-          <p style={{ fontSize: 13, color: "#64748b", marginTop: 8, lineHeight: 1.6 }}>Reading handwriting, correcting OCR errors, extracting medicines, and generating clinical summary...</p>
+          <p style={{ fontSize: 12.5, color: "var(--text-secondary)", marginTop: 6, lineHeight: 1.6 }}>
+            Deciphering handwritten abbreviations, cross-verifying active drug formulations, and standardizing medical instructions.
+          </p>
         </div>
       </div>
     );
@@ -182,79 +256,163 @@ export default function UploadPage() {
     const tags = geminiResult.tags ?? [];
     const findings = geminiResult.important_findings ?? [];
     return (
-      <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 24, maxWidth: 900 }} className="animate-fade-in">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ padding: "28px 36px 60px", display: "flex", flexDirection: "column", gap: 24, maxWidth: 1120, margin: "0 auto", minHeight: "100%", background: "var(--bg-canvas)" }} className="animate-fade-in">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "#f8fafc" }}>Review Results</h1>
-            <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Review AI-extracted data before saving</p>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+              Pre-Commit Clinical Audit
+            </h1>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
+              Verify extracted formulary items before filing to {selectedPatient?.name}'s medical chart
+            </p>
           </div>
           <OCRConfidenceIndicator confidence={ocrConfidence} showDetails />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          {/* Left column */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ borderRadius: 16, border: "1px solid #1e293b", overflow: "hidden" }}>
-              <img src={imageUrl} alt="Prescription" style={{ width: "100%", objectFit: "contain", maxHeight: 280, display: "block", background: "#0f172a" }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 24 }}>
+          {/* Left Column: Specimen & Summary */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div className="clinical-card" style={{ overflow: "hidden" }}>
+              <div className="clinical-dossier-header">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Ingested Specimen
+                </span>
+              </div>
+              <div style={{ padding: 12, background: "var(--bg-surface-subtle)" }}>
+                <img
+                  src={imageUrl}
+                  alt="Prescription"
+                  style={{ width: "100%", objectFit: "contain", maxHeight: 320, display: "block" }}
+                />
+              </div>
             </div>
 
-            <div style={{ borderRadius: 12, border: "1px solid #1e293b", background: "rgba(15,23,42,0.6)", overflow: "hidden" }}>
-              <div style={{ padding: "10px 14px", borderBottom: "1px solid #1e293b" }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>AI Summary</p>
+            <div className="clinical-card" style={{ overflow: "hidden" }}>
+              <div className="clinical-dossier-header">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Clinical Synthesis
+                </span>
               </div>
-              <div style={{ padding: 14 }}>
-                <p style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.7 }}>{geminiResult.summary || "No summary generated."}</p>
+              <div style={{ padding: 18 }}>
+                <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                  {geminiResult.summary || "No summary generated."}
+                </p>
               </div>
             </div>
 
             {findings.length > 0 && (
-              <div style={{ padding: 14, borderRadius: 12, border: "1px solid rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.05)" }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "#fbbf24", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>⚠ Important Findings</p>
-                <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {findings.map((f, i) => <li key={i} style={{ fontSize: 13, color: "rgba(252,211,77,0.8)", display: "flex", gap: 8 }}><span style={{ color: "#f59e0b" }}>·</span>{f}</li>)}
+              <div style={{ padding: 16, borderRadius: 8, border: "1px solid rgba(245,158,11,0.3)", background: "rgba(245,158,11,0.12)" }}>
+                <p style={{ fontSize: 11.5, fontWeight: 700, color: "#f59e0b", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
+                  ⚠ Critical Observations
+                </p>
+                <ul style={{ display: "flex", flexDirection: "column", gap: 4, listStyle: "none" }}>
+                  {findings.map((f, i) => (
+                    <li key={i} style={{ fontSize: 13, color: "var(--text-secondary)", display: "flex", gap: 8 }}>
+                      <span style={{ color: "#f59e0b" }}>›</span> {f}
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
 
             {tags.length > 0 && (
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Tags</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{tags.map((tag) => <TagBadge key={tag} tag={tag} />)}</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {tags.map((tag) => (
+                  <TagBadge key={tag} tag={tag} />
+                ))}
               </div>
             )}
           </div>
 
-          {/* Right column */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Right Column: Medicines & Doctor Notes */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {meds.length > 0 && (
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Medicines ({meds.length})</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{meds.map((med, i) => <MedicineBadge key={i} medicine={med} />)}</div>
+              <div className="clinical-card" style={{ overflow: "hidden" }}>
+                <div className="clinical-dossier-header" style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Detected Medicines ({meds.length})
+                  </span>
+                  <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: "var(--accent-primary)", fontWeight: 700 }}>
+                    FORMULARY EXTRACTED
+                  </span>
+                </div>
+                <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+                  {meds.map((med, i) => (
+                    <MedicineBadge key={i} medicine={med} />
+                  ))}
+                </div>
               </div>
             )}
 
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 8 }}>Corrected Text</label>
-              <div style={{ borderRadius: 12, border: "1px solid #1e293b", background: "rgba(15,23,42,0.6)", padding: 14, maxHeight: 160, overflowY: "auto" }}>
-                <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{geminiResult.corrected_text || "No corrected text."}</p>
+            <div className="clinical-card" style={{ overflow: "hidden" }}>
+              <div className="clinical-dossier-header">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Standardized Transcription
+                </span>
+              </div>
+              <div style={{ padding: 16, maxHeight: 160, overflowY: "auto", background: "var(--bg-surface-subtle)" }}>
+                <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "'JetBrains Mono', monospace" }}>
+                  {geminiResult.corrected_text || "No transcription generated."}
+                </p>
               </div>
             </div>
 
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 8 }}>Doctor Notes (Optional)</label>
+            <div className="clinical-card" style={{ padding: 18 }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                Physician Chart Notes (Optional)
+              </label>
               <textarea
-                value={doctorNotes} onChange={(e) => setDoctorNotes(e.target.value)}
-                rows={4} placeholder="Add any additional clinical notes..."
-                style={{ width: "100%", background: "#111827", border: "1px solid #1e293b", borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "#f8fafc", resize: "none", outline: "none", fontFamily: "inherit" }}
+                value={doctorNotes}
+                onChange={(e) => setDoctorNotes(e.target.value)}
+                rows={3}
+                placeholder="Append clinical impressions or follow-up directions..."
+                style={{
+                  width: "100%",
+                  background: "var(--input-bg)",
+                  border: "1px solid var(--border-input)",
+                  borderRadius: 6,
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  color: "var(--text-primary)",
+                  resize: "vertical",
+                  outline: "none",
+                }}
               />
             </div>
 
-            <div style={{ display: "flex", gap: 12 }}>
-              <button onClick={handleReset} style={{ flex: 1, padding: "10px 16px", borderRadius: 12, border: "1px solid #1e293b", background: "transparent", color: "#94a3b8", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
-                Start Over
+            <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+              <button
+                onClick={handleReset}
+                style={{
+                  flex: 1,
+                  padding: "11px 16px",
+                  borderRadius: 6,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-surface)",
+                  color: "var(--text-secondary)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Discard & Retry
               </button>
-              <button onClick={handleSave} style={{ flex: 2, padding: "10px 16px", borderRadius: 12, background: "linear-gradient(135deg, #10b981, #059669)", border: "none", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(16,185,129,0.3)" }}>
-                Save Prescription
+              <button
+                onClick={handleSave}
+                style={{
+                  flex: 2,
+                  padding: "11px 16px",
+                  borderRadius: 6,
+                  background: "var(--accent-primary)",
+                  border: "none",
+                  color: "white",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 6px rgba(15,118,110,0.25)",
+                }}
+              >
+                Commit & File to Patient Chart
               </button>
             </div>
           </div>
@@ -263,59 +421,93 @@ export default function UploadPage() {
     );
   }
 
-  // ── Select ─────────────────────────────────────────────────────────────────────
+  // ── Select Stage ─────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 28 }}>
-      <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: "#f8fafc" }}>Upload Prescription</h1>
-        <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Scan and digitize a prescription with Gemini AI</p>
+    <div style={{ minHeight: "100%", background: "var(--bg-canvas)" }}>
+      {/* Header */}
+      <div
+        className="clinical-header-bar"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          padding: "18px 36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+            Prescription Ingestion & OCR Station
+          </h1>
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>
+            Photograph or upload handwritten doctor prescriptions for clinical transcription
+          </p>
+        </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "start" }}>
-        {/* Left */}
+      <div style={{ padding: "32px 36px 60px", maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 32, alignItems: "start" }}>
+        {/* Left Form: Select Patient and Upload File */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>Select Patient *</label>
+          <div className="clinical-card" style={{ padding: 24 }}>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+              Target Patient Chart *
+            </label>
             <div style={{ position: "relative" }}>
-              <Users size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#64748b" }} />
+              <Users size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
               <select
-                value={selectedPatientId} onChange={(e) => setSelectedPatientId(e.target.value)} required
-                style={{ ...inputStyle, paddingLeft: 36, cursor: "pointer" }}
+                value={selectedPatientId}
+                onChange={(e) => setSelectedPatientId(e.target.value)}
+                required
+                style={{ ...inputStyle, paddingLeft: 38, cursor: "pointer" }}
               >
-                <option value="">— Select a patient —</option>
-                {patients.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.age} yrs · {p.phone}</option>)}
+                <option value="">— Select registered patient chart —</option>
+                {patients.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {p.age} yrs · {p.phone}
+                  </option>
+                ))}
               </select>
             </div>
             {patients.length === 0 && (
-              <p style={{ fontSize: 12, color: "#475569", marginTop: 8 }}>
-                No patients yet. <a href="/patients" style={{ color: "#60a5fa" }}>Add a patient first →</a>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
+                No patient records found. <a href="/patients" style={{ color: "var(--accent-primary)", fontWeight: 600 }}>Create a patient chart first →</a>
               </p>
             )}
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>Prescription Image *</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+              Prescription Document Specimen *
+            </label>
             <ImageDropzone selectedFile={selectedFile} onFileSelect={setSelectedFile} onClear={() => setSelectedFile(null)} />
           </div>
         </div>
 
-        {/* Right — Process button + info */}
+        {/* Right Callout: Analysis trigger */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ padding: 20, borderRadius: 16, border: "1px solid rgba(99,102,241,0.2)", background: "rgba(99,102,241,0.05)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(99,102,241,0.2)" }}>
-                <Sparkles size={18} color="#a78bfa" />
+          <div className="clinical-card" style={{ padding: 24, borderTop: "4px solid var(--accent-primary)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--accent-subtle)", border: "1px solid var(--accent-border)", color: "var(--accent-primary)" }}>
+                <Cpu size={18} />
               </div>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#c4b5fd" }}>Gemini Vision 2.5</p>
-                <p style={{ fontSize: 12, color: "#64748b" }}>AI-powered medical OCR</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Google Gemini OCR Engine</p>
+                <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Clinical intelligence pipeline</p>
               </div>
             </div>
-            <ul style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {["Reads handwritten & printed prescriptions", "Extracts medicines with dosage & frequency", "Generates clinical summaries & tags", "Flags important medical findings"].map((item) => (
-                <li key={item} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#94a3b8" }}>
-                  <CheckCircle size={14} color="#34d399" style={{ marginTop: 1, flexShrink: 0 }} />
-                  {item}
+
+            <ul style={{ display: "flex", flexDirection: "column", gap: 10, listStyle: "none" }}>
+              {[
+                "Parses complex handwriting and cursive clinical terminology",
+                "Extracts structured medicine entities (Dosage, Form, Frequency)",
+                "Generates standardized physician summaries and diagnostic tags",
+                "Flags urgent medical interactions and important clinical findings",
+              ].map((item) => (
+                <li key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <CheckCircle2 size={16} color="var(--accent-primary)" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
@@ -325,16 +517,24 @@ export default function UploadPage() {
             onClick={handleProcess}
             disabled={!selectedFile || !selectedPatientId || stage === "saving"}
             style={{
-              width: "100%", padding: "14px 20px", borderRadius: 14,
-              background: (!selectedFile || !selectedPatientId) ? "#1e293b" : "linear-gradient(135deg, #2563eb, #4f46e5)",
-              border: "none", color: (!selectedFile || !selectedPatientId) ? "#475569" : "white",
-              fontSize: 15, fontWeight: 700, cursor: (!selectedFile || !selectedPatientId) ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-              boxShadow: (!selectedFile || !selectedPatientId) ? "none" : "0 6px 20px rgba(37,99,235,0.4)",
-              transition: "all 0.2s",
+              width: "100%",
+              padding: "13px 20px",
+              borderRadius: 6,
+              background: !selectedFile || !selectedPatientId ? "var(--bg-muted)" : "var(--accent-primary)",
+              border: "none",
+              color: !selectedFile || !selectedPatientId ? "var(--text-muted)" : "white",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: !selectedFile || !selectedPatientId ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: !selectedFile || !selectedPatientId ? "none" : "0 2px 8px rgba(15,118,110,0.3)",
+              transition: "all 0.15s ease",
             }}
           >
-            <Sparkles size={18} /> Analyze with Gemini AI
+            <ShieldCheck size={16} /> Ingest & Transcribe Document
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
+import { jsonrepair } from "jsonrepair";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -51,6 +52,7 @@ RULES:
 - Preserve uncertain text as-is in raw_ocr
 - Prefix unclear medicine names with "Possibly " (e.g., "Possibly Levolin")
 - Return ONLY valid JSON, no markdown, no explanation
+- CRITICAL: All string values MUST be valid JSON strings. Escape every backslash as \\\\ (e.g. write c\\\\o instead of c\\o, 1\\\\2 instead of 1\\2). Never emit unescaped backslashes or raw newlines inside JSON strings.
 - If the image is unreadable, return empty fields and confidence 0
 
 Return ONLY this exact JSON structure:
@@ -111,6 +113,82 @@ async function callWithRetry(
     : new Error("All Gemini models are currently unavailable. Please try again in a moment.");
 }
 
+function cleanJsonText(raw: string): string {
+  let str = raw.trim();
+  const firstBrace = str.indexOf("{");
+  const lastBrace = str.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    str = str.slice(firstBrace, lastBrace + 1);
+  } else {
+    str = str
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+  }
+  return str;
+}
+
+function sanitizeEscapes(str: string): string {
+  let out = "";
+  let inString = false;
+  let isEscaped = false;
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (!inString) {
+      if (ch === '"') {
+        inString = true;
+        isEscaped = false;
+      }
+      out += ch;
+      continue;
+    }
+
+    if (isEscaped) {
+      if (ch === '"' || ch === '\\' || ch === '/' || ch === 'b' || ch === 'f' || ch === 'n' || ch === 'r' || ch === 't') {
+        out += ch;
+      } else if (ch === 'u') {
+        const hex = str.slice(i + 1, i + 5);
+        if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+          out += 'u' + hex;
+          i += 4;
+        } else {
+          out = out.slice(0, -1) + '\\\\u';
+        }
+      } else {
+        // Bad escaped character (e.g., \o, \1, \d, \ ) -> turn previous \ into \\ and preserve char
+        out = out.slice(0, -1) + '\\\\' + ch;
+      }
+      isEscaped = false;
+    } else {
+      if (ch === '\\') {
+        isEscaped = true;
+        out += '\\';
+      } else if (ch === '"') {
+        inString = false;
+        out += '"';
+      } else if (ch === '\n') {
+        out += '\\n';
+      } else if (ch === '\r') {
+        out += '\\r';
+      } else if (ch === '\t') {
+        out += '\\t';
+      } else {
+        out += ch;
+      }
+    }
+  }
+
+  if (inString && isEscaped) {
+    out += '\\';
+  }
+  if (inString) {
+    out += '"';
+  }
+  return out;
+}
+
 function repairJson(s: string): string {
   let result = s;
   const stack: string[] = [];
@@ -139,20 +217,36 @@ function repairJson(s: string): string {
   return result;
 }
 
-function parseGeminiJson(raw: string) {
-  const jsonText = raw
-    .trim()
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/\s*```$/i, "")
-    .trim();
+function parseGeminiJson(raw: string): unknown {
+  const cleaned = cleanJsonText(raw);
 
+  // 1. Standard fast JSON parse
   try {
-    return JSON.parse(jsonText);
-  } catch {
-    const repaired = repairJson(jsonText);
-    return JSON.parse(repaired);
+    return JSON.parse(cleaned);
+  } catch (err1) {
+    console.warn("[Gemini] Standard parse failed, trying jsonrepair:", err1 instanceof Error ? err1.message : err1);
   }
+
+  // 2. Battle-tested jsonrepair library
+  try {
+    const repaired = jsonrepair(cleaned);
+    return JSON.parse(repaired);
+  } catch (err2) {
+    console.warn("[Gemini] jsonrepair failed, trying escape sanitizer:", err2 instanceof Error ? err2.message : err2);
+  }
+
+  // 3. Escape sanitizer + jsonrepair (handles unescaped backslashes like \o, \1, \ , raw newlines)
+  try {
+    const sanitized = sanitizeEscapes(cleaned);
+    const repaired = jsonrepair(sanitized);
+    return JSON.parse(repaired);
+  } catch (err3) {
+    console.warn("[Gemini] Sanitized jsonrepair failed, trying fallback:", err3 instanceof Error ? err3.message : err3);
+  }
+
+  // 4. Fallback manual brace & quote closer
+  const fallback = repairJson(sanitizeEscapes(cleaned));
+  return JSON.parse(fallback);
 }
 
 export async function analyzeImageWithGemini(

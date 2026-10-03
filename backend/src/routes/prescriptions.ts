@@ -146,7 +146,8 @@ router.get("/search", async (req: AuthRequest, res: Response) => {
             ilike(patients.name, `%${query}%`),
             ilike(patients.phone, `%${query}%`),
             ilike(prescriptions.correctedText, `%${query}%`),
-            ilike(prescriptions.aiSummary, `%${query}%`)
+            ilike(prescriptions.aiSummary, `%${query}%`),
+            ilike(prescriptions.doctorNotes, `%${query}%`)
           )
         )
       )

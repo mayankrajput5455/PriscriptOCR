@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X, FileImage, Camera } from "lucide-react";
 
 interface ImageDropzoneProps {
   onFileSelect: (file: File) => void;
@@ -10,36 +10,95 @@ interface ImageDropzoneProps {
 export function ImageDropzone({ onFileSelect, selectedFile, onClear }: ImageDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) onFileSelect(file);
-  }, [onFileSelect]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) onFileSelect(file);
+    },
+    [onFileSelect]
+  );
 
   if (selectedFile) {
     const url = URL.createObjectURL(selectedFile);
     return (
-      <div style={{ borderRadius: 16, border: "1px solid #1e293b", overflow: "hidden", background: "#0f172a" }}>
-        <div style={{ position: "relative" }}>
-          <img src={url} alt="Selected" style={{ width: "100%", maxHeight: 280, objectFit: "contain", display: "block" }} />
+      <div
+        className="clinical-card"
+        style={{
+          overflow: "hidden",
+          border: "1px solid var(--border-color)",
+        }}
+      >
+        <div style={{ position: "relative", background: "var(--bg-surface-subtle)", padding: 12 }}>
+          <img
+            src={url}
+            alt="Selected prescription document"
+            style={{ width: "100%", maxHeight: 300, objectFit: "contain", display: "block" }}
+          />
           <button
             onClick={onClear}
             style={{
-              position: "absolute", top: 12, right: 12, width: 32, height: 32,
-              borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(15,23,42,0.85)", border: "1px solid #334155", color: "#94a3b8",
+              position: "absolute",
+              top: 18,
+              right: 18,
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-muted)",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
               cursor: "pointer",
             }}
           >
             <X size={16} />
           </button>
         </div>
-        <div style={{ padding: "12px 16px", borderTop: "1px solid #1e293b" }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{selectedFile.name}</p>
-          <p style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
-            {(selectedFile.size / 1024).toFixed(0)} KB · Click or drag to replace
-          </p>
+        <div
+          style={{
+            padding: "12px 18px",
+            borderTop: "1px solid var(--border-subtle)",
+            background: "var(--bg-surface)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{selectedFile.name}</p>
+            <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+              {(selectedFile.size / 1024).toFixed(0)} KB · Ready for OCR digitization
+            </p>
+          </div>
+          <button
+            onClick={() => inputRef.current?.click()}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: "var(--accent-primary)",
+              background: "var(--accent-subtle)",
+              border: "1px solid var(--accent-border)",
+              padding: "4px 10px",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            Change Image
+          </button>
         </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onFileSelect(file);
+          }}
+        />
       </div>
     );
   }
@@ -50,17 +109,21 @@ export function ImageDropzone({ onFileSelect, selectedFile, onClear }: ImageDrop
       onDragOver={(e) => e.preventDefault()}
       onClick={() => inputRef.current?.click()}
       style={{
-        borderRadius: 16, border: "2px dashed #334155",
-        background: "rgba(30,41,59,0.3)", padding: "48px 32px",
-        textAlign: "center", cursor: "pointer", transition: "all 0.2s",
+        borderRadius: 8,
+        border: "2px dashed var(--border-input)",
+        background: "var(--bg-surface)",
+        padding: "48px 32px",
+        textAlign: "center",
+        cursor: "pointer",
+        transition: "all 0.15s ease",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "#3b82f6";
-        (e.currentTarget as HTMLDivElement).style.background = "rgba(59,130,246,0.05)";
+        e.currentTarget.style.borderColor = "var(--accent-primary)";
+        e.currentTarget.style.background = "var(--accent-subtle)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "#334155";
-        (e.currentTarget as HTMLDivElement).style.background = "rgba(30,41,59,0.3)";
+        e.currentTarget.style.borderColor = "var(--border-input)";
+        e.currentTarget.style.background = "var(--bg-surface)";
       }}
     >
       <input
@@ -75,18 +138,25 @@ export function ImageDropzone({ onFileSelect, selectedFile, onClear }: ImageDrop
       />
       <div
         style={{
-          width: 56, height: 56, borderRadius: 16, margin: "0 auto 16px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.2)",
+          width: 52,
+          height: 52,
+          borderRadius: 8,
+          margin: "0 auto 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--accent-subtle)",
+          border: "1px solid var(--accent-border)",
+          color: "var(--accent-primary)",
         }}
       >
-        <Upload size={24} color="#60a5fa" />
+        <Upload size={22} />
       </div>
-      <p style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0", marginBottom: 8 }}>
-        Drop prescription image here
+      <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+        Drop prescription document or photograph here
       </p>
-      <p style={{ fontSize: 13, color: "#64748b" }}>
-        or click to browse · JPG, PNG, WEBP supported
+      <p style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+        or click to browse files · Supports JPG, PNG, WEBP high-resolution scans
       </p>
     </div>
   );

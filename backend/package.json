@@ -22,6 +22,7 @@
     "drizzle-orm": "^0.45.2",
     "express": "^4.21.2",
     "jose": "^6.2.9",
+    "jsonrepair": "^3.15.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^9.0.5",
     "sharp": "^0.35.3",
